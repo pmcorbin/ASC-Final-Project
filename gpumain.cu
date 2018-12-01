@@ -15,42 +15,59 @@
 #define B_WIDTH    		2000 // number of rows
 
 int main(){
-    double *A, *B, *C, *cpu_C;
+    double *filter, *old_R, *old_B, *old_G, *new_R, *new_B, *new_G;
     int i, j;
-    Matrix M_A, M_B, M_C; 
-	
-    cpu_C = (double*)malloc(A_HEIGHT*B_WIDTH*sizeof(double));  
-    C = (double*)malloc(A_HEIGHT*B_WIDTH*sizeof(double));  
-    A = (double*)malloc(A_HEIGHT*AB_SHARED_DIM*sizeof(double));
-    B = (double*)malloc(AB_SHARED_DIM*B_WIDTH*sizeof(double));
+    Matrix M_filter, M_old_R, M_old_B, M_old_G, M_new_R, M_new_B, M_new_G;
 
-	// initialize cpu_C[]
-    for(i = 0; i < A_HEIGHT; i++)
+	/*Begin: read in a jpg image*/
+    int pixel_size;
+    int pixel = 0;
+    bundle  RGB_bundle;
+	
+    // Read jpg to bundle
+    read_jpg("Sunflower.jpg", &RGB_bundle);
+    pixel_size = RGB_bundle.num_channels;
+	
+	old_R = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
+    old_G = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
+
+	// Convert bundle to RGB matices
+    for(int i = 0; i < RGB_bundle.width; i++)
     {
-        for(j = 0; j < B_WIDTH; j++)
+        for(int j = 0; j < RGB_bundle.height; j++)
         {
-            cpu_C[i*B_WIDTH + j] = 0.0;
+            old_R[i*RGB_bundle.width + j] = RGB_bundle.image_data[pixel*pixel_size];
+			old_G[i*RGB_bundle.width + j] = RGB_bundle.image_data[pixel*pixel_size+1];
+			old_B[i*RGB_bundle.width + j] = RGB_bundle.image_data[pixel*pixel_size+2];
+			pixel++;
         }
     }
+	M_old_R.elements = old_R;
+	M_old_B.elements = old_B;
+	M_old_G.elements = old_G;
+	M_old_R.width = RGB_bundle.width;
+	M_old_B.width = RGB_bundle.width;
+    M_old_G.width = RGB_bundle.width;
+	M_old_R.height = RGB_bundle.height;
+	M_old_B.height = RGB_bundle.height;
+	M_old_G.height = RGB_bundle.height;
+	/*End: read in a jpg image*/
 
+    // Filter Function
+    int kernelsize = 3;
+	M_filter.width = kernelsize;
+	M_filter.height = kernelsize;
 
-    M_C.width = B_WIDTH; M_C.height = A_HEIGHT;
-    M_C.elements = C; 
-	
+    for(int i=0;i<M_filter.width;i++){
+        for(int j=0;j<M_filter.height;j++){
+            filter[i*RGB_bundle.width + j] = 1.0/(kernelsize*kernelsize);
+        }
+    }
+	M_filter.elements = filter;
+
 	struct timeval tvalBefore, tvalAfter;
     gettimeofday (&tvalBefore, NULL);
-    double Cvalue; 
-    for(i = 0; i < A_HEIGHT; i++)
-    {
-        for(j = 0; j < B_WIDTH; j++)
-        {
-            Cvalue = 0.0; 
-            for (int k = 0; k < AB_SHARED_DIM; ++k)
-                Cvalue += M_A.elements[i * M_A.width + k]
-                          *M_B.elements[k * M_B.width + j];
-            cpu_C[i*B_WIDTH + j] = Cvalue;
-        }
-    }
+	////////////////////
 	gettimeofday (&tvalAfter, NULL);
     printf("Sequential Time: %f",
             (float)((tvalAfter.tv_sec - tvalBefore.tv_sec))
