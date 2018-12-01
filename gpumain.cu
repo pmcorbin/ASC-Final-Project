@@ -29,7 +29,9 @@ int main(){
     pixel_size = RGB_bundle.num_channels;
 	
 	old_R = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
-    old_G = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
+    old_B = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
+	old_G = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
+		
 
 	// Convert bundle to RGB matices
     for(int i = 0; i < RGB_bundle.width; i++)
