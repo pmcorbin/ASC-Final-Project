@@ -1,15 +1,9 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
-#include <fcns.h>
-
-// Definition of Matrix Type
-typedef struct {
-    int width;
-    int height;
-    double* elements;
-} Matrix;
-
+#include "fcns.h"
+#include <stdio.h>
+#include <stdlib.h>
 // Definition of Matrix Filter Function CPU
 void MatFilter(const Matrix myfilter, Matrix oldimage, Matrix newimage)
 {
@@ -21,14 +15,14 @@ void MatFilter(const Matrix myfilter, Matrix oldimage, Matrix newimage)
     cudaMalloc(&d_myfilter.elements, size);
     cudaMemcpy(d_myfilter.elements, myfilter.elements, size,
                cudaMemcpyHostToDevice);
-    Matrix d_myimage;
+    Matrix d_oldimage;
     d_oldimage.width = oldimage.width; 
 	d_oldimage.height = oldimage.height;
     size = oldimage.width * oldimage.height * sizeof(double);
     cudaMalloc(&d_oldimage.elements, size);
     cudaMemcpy(d_oldimage.elements, oldimage.elements, size,
                cudaMemcpyHostToDevice);
-	Matrix d_myimage;
+	Matrix d_newimage;
     d_newimage.width = newimage.width;
     d_newimage.height = newimage.height;
     size = newimage.width * newimage.height * sizeof(double);
@@ -43,7 +37,7 @@ void MatFilter(const Matrix myfilter, Matrix oldimage, Matrix newimage)
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
-    MatMulKernel<<<dimGrid, dimBlock>>>(d_filter, d_oldimage, d_newimage);
+    //MatFilterKernel<<<dimGrid, dimBlock>>>(d_filter, d_oldimage, d_newimage);
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
     float elapseTime;
@@ -55,13 +49,13 @@ void MatFilter(const Matrix myfilter, Matrix oldimage, Matrix newimage)
                cudaMemcpyDeviceToHost);
 
     // Free device memory
-    cudaFree(d_filter.elements);
+    //cudaFree(d_filter.elements);
     cudaFree(d_oldimage.elements);
     cudaFree(d_newimage.elements);
 }
 
 // Definition of Matrix Filter Function GPU
-__global__ void MatFilterKernel(Matrix filter, Matrix oldimage, Matrix newimage)
+/*__global__ void MatFilterKernel(Matrix filter, Matrix oldimage, Matrix newimage)
 {
     // Each thread computes one element of C
     // by accumulating results into Cvalue
@@ -77,5 +71,16 @@ __global__ void MatFilterKernel(Matrix filter, Matrix oldimage, Matrix newimage)
                     * B.elements[i * B.width + col];
         C.elements[row * C.width + col] = Cvalue;
     }
+}*/
+
+void MatPrint(const Matrix M){
+	for(int i=0; i<M.height; i++){
+		for(int j=0; j<M.width; j++){
+			printf("%f ",M.elements[i*M.width+j]);
+		}	
+		printf("\n");
+	}
 }
+
+
 

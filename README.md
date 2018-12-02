@@ -1,6 +1,3 @@
-hey 
-ASC-Final-Project
-=======
 # ASC-Final-Project
-Test push
+nvcc gpumain.cu fcns.cu rw_jpg.cpp -ljpeg
 
