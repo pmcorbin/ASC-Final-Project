@@ -15,7 +15,9 @@
 
 int main(){
     double *filter, *old_R, *old_B, *old_G, *new_R, *new_B, *new_G;
+	double *gpu_new_R, *gpu_new_G, *gpu_new_B;
     Matrix M_filter, M_old_R, M_old_B, M_old_G, M_new_R, M_new_B, M_new_G;
+	Matrix M_gpu_new_R, M_gpu_new_B, M_gpu_new_G;
 
 	/*Begin: read in a jpg image*/
     int pixel_size;
@@ -77,6 +79,16 @@ int main(){
     M_new_B.height = RGB_bundle.height-kernelsize+1;
     M_new_G.height = RGB_bundle.height-kernelsize+1;
 	
+	M_gpu_new_R.elements = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
+    M_gpu_new_B.elements = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
+    M_gpu_new_G.elements = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
+    M_gpu_new_R.width = RGB_bundle.width-kernelsize+1;
+    M_gpu_new_B.width = RGB_bundle.width-kernelsize+1;
+    M_gpu_new_G.width = RGB_bundle.width-kernelsize+1;
+    M_gpu_new_R.height = RGB_bundle.height-kernelsize+1;
+    M_gpu_new_B.height = RGB_bundle.height-kernelsize+1;
+    M_gpu_new_G.height = RGB_bundle.height-kernelsize+1;
+
 	for(int i=0;i<M_new_R.height;i++){
 		for(int j=0;j<M_new_R.width;j++){
 			new_R[i*M_new_R.width + j]=0;
@@ -97,10 +109,14 @@ int main(){
 		}   
 	}
 	
+	MatFilter(M_filter,M_old_R, M_gpu_new_R);
+	MatFilter(M_filter, M_old_G, M_gpu_new_G);
+	MatFilter(M_filter, M_old_B, M_gpu_new_B);
+	
 	// Put Matrices back in bundle
 	bundle n_RGB_bundle;
-	n_RGB_bundle.height = M_new_R.height;
-	n_RGB_bundle.width = M_new_R.width;
+	n_RGB_bundle.height = M_gpu_new_R.height;
+	n_RGB_bundle.width = M_gpu_new_R.width;
 	n_RGB_bundle.num_channels = 3;
 	pixel =0;
 	n_RGB_bundle.image_data = (unsigned char*) malloc(n_RGB_bundle.width*n_RGB_bundle.height*pixel_size);
@@ -108,9 +124,9 @@ int main(){
     {
         for(int j = 0; j < n_RGB_bundle.width; j++)
         {
-            n_RGB_bundle.image_data[pixel*pixel_size]=new_R[i*n_RGB_bundle.width + j];
-            n_RGB_bundle.image_data[pixel*pixel_size +1]=new_G[i*n_RGB_bundle.width + j];
-            n_RGB_bundle.image_data[pixel*pixel_size +2]=new_B[i*n_RGB_bundle.width + j];
+            n_RGB_bundle.image_data[pixel*pixel_size]=M_gpu_new_R.elements[i*n_RGB_bundle.width + j];
+            n_RGB_bundle.image_data[pixel*pixel_size +1]=M_gpu_new_G.elements[i*n_RGB_bundle.width + j];
+            n_RGB_bundle.image_data[pixel*pixel_size +2]=M_gpu_new_B.elements[i*n_RGB_bundle.width + j];
             pixel++;
         }
     }
@@ -123,6 +139,7 @@ int main(){
 	free(n_RGB_bundle.image_data);
     free(old_R); free(old_G); free(old_B); 
 	free(new_R); free(new_G); free(new_B); 
+	//free(gpu_new_R); free(gpu_new_G); free(gpu_new_B);
     return 0;
 }
 

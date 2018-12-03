@@ -4,40 +4,41 @@
 #include "fcns.h"
 #include <stdio.h>
 #include <stdlib.h>
+
 // Definition of Matrix Filter Function CPU
-void MatFilter(const Matrix myfilter, Matrix oldimage, Matrix newimage)
+void MatFilter(const Matrix filter,const Matrix oldmat, Matrix newmat)
 {
     // Load  to device memory
-    Matrix d_myfilter;
-    d_myfilter.width = myfilter.width; 
-	d_myfilter.height = myfilter.height;
-    size_t size = myfilter.width * myfilter.height * sizeof(double);
-    cudaMalloc(&d_myfilter.elements, size);
-    cudaMemcpy(d_myfilter.elements, myfilter.elements, size,
+    Matrix d_filter;
+    d_filter.width = filter.width; 
+	d_filter.height = filter.height;
+    size_t size = filter.width * filter.height * sizeof(double);
+    cudaMalloc(&d_filter.elements, size);
+    cudaMemcpy(d_filter.elements, filter.elements, size,
                cudaMemcpyHostToDevice);
-    Matrix d_oldimage;
-    d_oldimage.width = oldimage.width; 
-	d_oldimage.height = oldimage.height;
-    size = oldimage.width * oldimage.height * sizeof(double);
-    cudaMalloc(&d_oldimage.elements, size);
-    cudaMemcpy(d_oldimage.elements, oldimage.elements, size,
+    Matrix d_oldmat;
+    d_oldmat.width = oldmat.width; 
+	d_oldmat.height = oldmat.height;
+    size = oldmat.width * oldmat.height * sizeof(double);
+    cudaMalloc(&d_oldmat.elements, size);
+    cudaMemcpy(d_oldmat.elements, oldmat.elements, size,
                cudaMemcpyHostToDevice);
-	Matrix d_newimage;
-    d_newimage.width = newimage.width;
-    d_newimage.height = newimage.height;
-    size = newimage.width * newimage.height * sizeof(double);
-    cudaMalloc(&d_newimage.elements, size);
-
+	Matrix d_newmat;
+    d_newmat.width = newmat.width;
+    d_newmat.height = newmat.height;
+    size = newmat.width * newmat.height * sizeof(double);
+    cudaMalloc(&d_newmat.elements, size);
+	
     // Invoke kernel
     dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 dimGrid((newimage.width+BLOCK_SIZE-1) / dimBlock.x, 
-		(newimage.height+BLOCK_SIZE-1)/ dimBlock.y);
+    dim3 dimGrid((newmat.width+BLOCK_SIZE-1) / dimBlock.x, 
+		(newmat.height+BLOCK_SIZE-1)/ dimBlock.y);
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
-    //MatFilterKernel<<<dimGrid, dimBlock>>>(d_filter, d_oldimage, d_newimage);
+    MatFilterKernel<<<dimGrid, dimBlock>>>(d_filter, d_oldmat, d_newmat);
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
     float elapseTime;
@@ -45,33 +46,34 @@ void MatFilter(const Matrix myfilter, Matrix oldimage, Matrix newimage)
     printf("Time to generate: %f ms\n", elapseTime);
 
     // Read C from device memory
-    cudaMemcpy(newimage.elements, d_newimage.elements, size,
+    cudaMemcpy(newmat.elements, d_newmat.elements, size,
                cudaMemcpyDeviceToHost);
 
     // Free device memory
-    //cudaFree(d_filter.elements);
-    cudaFree(d_oldimage.elements);
-    cudaFree(d_newimage.elements);
+    cudaFree(d_filter.elements);
+    cudaFree(d_oldmat.elements);
+    cudaFree(d_newmat.elements);
 }
 
 // Definition of Matrix Filter Function GPU
-/*__global__ void MatFilterKernel(Matrix filter, Matrix oldimage, Matrix newimage)
+__global__ void MatFilterKernel(Matrix filter, Matrix oldmat, Matrix newmat)
 {
-    // Each thread computes one element of C
-    // by accumulating results into Cvalue
-    double Cvalue = 0;
+    // Each thread computes one element of newmat
+    // by accumulating results into tempval
+    double tempval = 0;
 
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if(row < A_HEIGHT && col < B_WIDTH)
-    {
-        for (int i = 0; i < A.width; ++i)
-            Cvalue += A.elements[row * A.width + i]
-                    * B.elements[i * B.width + col];
-        C.elements[row * C.width + col] = Cvalue;
-    }
-}*/
+	
+	// Apply Filter by row and column
+   	for(int k=0;k<filter.height;k++){
+        for(int m=0; m<filter.width; m++){
+        	tempval+=oldmat.elements[(row+k)*oldmat.width+(col+m)]
+					*filter.elements[k*filter.width+m];
+    	}
+   	}
+	newmat.elements[row * newmat.width + col] = tempval;
+}
 
 void MatPrint(const Matrix M){
 	for(int i=0; i<M.height; i++){
