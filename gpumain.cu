@@ -66,7 +66,6 @@ int main(){
 		}
     }
 	M_filter.elements = filter;
-	//MatPrint(M_filter);
 	
 	// Filter Image CPU
 	new_R = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
@@ -78,10 +77,12 @@ int main(){
     M_new_R.height = RGB_bundle.height-kernelsize+1;
     M_new_B.height = RGB_bundle.height-kernelsize+1;
     M_new_G.height = RGB_bundle.height-kernelsize+1;
-	
-	M_gpu_new_R.elements = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
-    M_gpu_new_B.elements = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
-    M_gpu_new_G.elements = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
+	M_gpu_new_R.elements 
+	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
+    M_gpu_new_B.elements 
+	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
+    M_gpu_new_G.elements 
+	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
     M_gpu_new_R.width = RGB_bundle.width-kernelsize+1;
     M_gpu_new_B.width = RGB_bundle.width-kernelsize+1;
     M_gpu_new_G.width = RGB_bundle.width-kernelsize+1;
