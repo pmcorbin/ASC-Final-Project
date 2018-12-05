@@ -33,8 +33,17 @@ void MatFilter(const Matrix filter,const Matrix oldmat, Matrix newmat)
     dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
     dim3 dimGrid((newmat.width+BLOCK_SIZE-1) / dimBlock.x, 
 		(newmat.height+BLOCK_SIZE-1)/ dimBlock.y);
-
+	
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start, 0);
     MatFilterKernel<<<dimGrid, dimBlock>>>(d_filter, d_oldmat, d_newmat);
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+	float elapseTime;
+	cudaEventElapsedTime(&elapseTime, start, stop);
+	printf("Time to generate: %f ms\n", elapseTime);
 
     // Read C from device memory
     cudaMemcpy(newmat.elements, d_newmat.elements, size,

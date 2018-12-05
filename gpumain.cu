@@ -33,9 +33,10 @@ int main(){
     read_jpg("Sunflower.jpg", &RGB_bundle);
     pixel_size = RGB_bundle.num_channels;
 	
+	// Allocate memory to store RGB values
 	old_R = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
-    old_B = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
-	old_G = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
+    old_G = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
+	old_B = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double));
 		
 	// Convert bundle to RGB matices
     for(int i = 0; i < RGB_bundle.height; i++)
@@ -48,7 +49,8 @@ int main(){
 			pixel++;
         }
     }
-
+	
+	// Move RGB elements into matrix struct
 	M_old_R.elements = old_R;
 	M_old_B.elements = old_B;
 	M_old_G.elements = old_G;
@@ -58,25 +60,32 @@ int main(){
 	M_old_R.height = RGB_bundle.height;
 	M_old_B.height = RGB_bundle.height;
 	M_old_G.height = RGB_bundle.height;
-	/*End: read in a jpg image*/
     
 	/*///////////////                           		/////////////////////
     /////////////////   INITIALIZE FILTER FUNCTION  	/////////////////////
     ////////////////                            		///////////////////// */
-    int kernelsize = 20;
+    int kernelsize = 20; // Filter height and width
+	
+	// Allocate memory for filter matrix
 	M_filter.width = kernelsize;
 	M_filter.height = kernelsize;
 	filter = (double*)malloc(kernelsize*kernelsize*sizeof(double));
+	
+	// Populate filter matrix
 	for(int i=0;i<M_filter.height;i++){
         for(int j=0;j<M_filter.width;j++){
             filter[i*kernelsize + j] = 1.0/(kernelsize*kernelsize);
 		}
     }
+	
+	// Move filter values to matrix struct
 	M_filter.elements = filter;
 	
 	/*///////////////                           /////////////////////
     /////////////////   CPU FILTERING OF IMAGE  /////////////////////
     ////////////////                            ///////////////////// */
+	
+	// Allocate memory for filtered RGB matrices
 	new_R = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
     new_B = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
     new_G = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
@@ -100,7 +109,7 @@ int main(){
     M_gpu_new_G.height = RGB_bundle.height-kernelsize+1;
 	
 	// CPU filtering loop
-	struct timeval tvalBefore, tvalAfter;
+	struct timeval tvalBefore, tvalAfter;	// for measuring cpu execution time
     gettimeofday (&tvalBefore, NULL);
 	for(int i=0;i<M_new_R.height;i++){
 		for(int j=0;j<M_new_R.width;j++){
@@ -121,9 +130,9 @@ int main(){
 			}
 		}   
 	}
-	gettimeofday (&tvalAfter, NULL);
-    printf("CPU Time: %f",
-            (float)((tvalAfter.tv_usec - tvalBefore.tv_usec))
+	gettimeofday (&tvalAfter, NULL);	// for measuring cpu execution time
+    printf("CPU Time: %f ms\n",
+            (float)((tvalAfter.tv_sec - tvalBefore.tv_sec))/
           );
 
 	/*///////////////							/////////////////////
@@ -136,12 +145,16 @@ int main(){
 	/*///////////////                           		/////////////////////
     /////////////////   EXPORT FILTERED IMAGE TO JPEG  	/////////////////////
     ////////////////                            		///////////////////// */
+	
+	// Initialize new bundles for exporting filtered image
 	bundle n_RGB_bundle;
 	n_RGB_bundle.height = M_gpu_new_R.height;
 	n_RGB_bundle.width = M_gpu_new_R.width;
 	n_RGB_bundle.num_channels = 3;
 	pixel =0;
 	n_RGB_bundle.image_data = (unsigned char*) malloc(n_RGB_bundle.width*n_RGB_bundle.height*pixel_size);
+	
+	// Move matrix vaules to bundle
 	for(int i = 0; i < n_RGB_bundle.height; i++)
     {
         for(int j = 0; j < n_RGB_bundle.width; j++)
@@ -153,9 +166,8 @@ int main(){
         }
     }
 	
-	/*save jpeg file*/
+	// Write bundle to jpeg image
     write_jpg("Sunflower_2.jpg", &n_RGB_bundle);
-    /*END: save jpeg file*/
     
 	/*///////////////                           /////////////////////
     /////////////////   	CLEAN UP		  	/////////////////////
