@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 // Definition of Matrix Filter Function CPU
-void MatFilter(const Matrix filter,const Matrix oldmat, Matrix newmat)
+float MatFilter(const Matrix filter,const Matrix oldmat, Matrix newmat)
 {
     // Load  to device memory
     Matrix d_filter;
@@ -43,8 +43,7 @@ void MatFilter(const Matrix filter,const Matrix oldmat, Matrix newmat)
 	cudaEventSynchronize(stop);
 	float elapseTime;
 	cudaEventElapsedTime(&elapseTime, start, stop);
-	printf("Time to generate: %f ms\n", elapseTime);
-
+	
     // Read C from device memory
     cudaMemcpy(newmat.elements, d_newmat.elements, size,
                cudaMemcpyDeviceToHost);
@@ -53,6 +52,8 @@ void MatFilter(const Matrix filter,const Matrix oldmat, Matrix newmat)
     cudaFree(d_filter.elements);
     cudaFree(d_oldmat.elements);
     cudaFree(d_newmat.elements);
+	
+	return elapseTime/1000.0;
 }
 
 // Definition of Matrix Filter Function GPU

@@ -64,7 +64,7 @@ int main(){
 	/*///////////////                           		/////////////////////
     /////////////////   INITIALIZE FILTER FUNCTION  	/////////////////////
     ////////////////                            		///////////////////// */
-    int kernelsize = 20; // Filter height and width
+    int kernelsize = 40; // Filter height and width
 	
 	// Allocate memory for filter matrix
 	M_filter.width = kernelsize;
@@ -109,8 +109,10 @@ int main(){
     M_gpu_new_G.height = RGB_bundle.height-kernelsize+1;
 	
 	// CPU filtering loop
+	printf("Start\n");
 	struct timeval tvalBefore, tvalAfter;	// for measuring cpu execution time
     gettimeofday (&tvalBefore, NULL);
+	float CPUtime=0;
 	for(int i=0;i<M_new_R.height;i++){
 		for(int j=0;j<M_new_R.width;j++){
 			new_R[i*M_new_R.width + j]=0;
@@ -131,17 +133,16 @@ int main(){
 		}   
 	}
 	gettimeofday (&tvalAfter, NULL);	// for measuring cpu execution time
-    printf("CPU Time: %f ms\n",
-            (float)((tvalAfter.tv_sec - tvalBefore.tv_sec))/
-          );
+    CPUtime = (tvalAfter.tv_sec - tvalBefore.tv_sec);
+	printf("CPU Time: %f s\n",CPUtime);
 
 	/*///////////////							/////////////////////
 	/////////////////	GPU FILTERING OF IMAGE  /////////////////////
 	////////////////							///////////////////// */
-	MatFilter(M_filter,M_old_R, M_gpu_new_R);
-	MatFilter(M_filter, M_old_G, M_gpu_new_G);
-	MatFilter(M_filter, M_old_B, M_gpu_new_B);
-	
+	float elapseTime1 =MatFilter(M_filter,M_old_R, M_gpu_new_R);
+	float elapseTime2 =MatFilter(M_filter, M_old_G, M_gpu_new_G);
+	float elapseTime3 =MatFilter(M_filter, M_old_B, M_gpu_new_B);
+	printf("GPU Time: %f s\n",elapseTime1+elapseTime2+elapseTime3);
 	/*///////////////                           		/////////////////////
     /////////////////   EXPORT FILTERED IMAGE TO JPEG  	/////////////////////
     ////////////////                            		///////////////////// */

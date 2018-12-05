@@ -24,7 +24,7 @@ struct Matrix{
 __global__ void MatFilterKernel(const Matrix,  const Matrix, Matrix);
 
 // Declaration of matrix filter cpu function
-void MatFilter(const Matrix myfilter, Matrix oldimage, Matrix newimage);
+float MatFilter(const Matrix myfilter, Matrix oldimage, Matrix newimage);
 
 // Declaration of matrix print function
 void MatPrint(const Matrix M);
