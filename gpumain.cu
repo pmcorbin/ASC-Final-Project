@@ -14,12 +14,17 @@
 #include "fcns.h"
 
 int main(){
+	/*///////////////                           /////////////////////
+    /////////////////   INITIALIZE VARIABLES  	/////////////////////
+    ////////////////                            ///////////////////// */
     double *filter, *old_R, *old_B, *old_G, *new_R, *new_B, *new_G;
 	double *gpu_new_R, *gpu_new_G, *gpu_new_B;
     Matrix M_filter, M_old_R, M_old_B, M_old_G, M_new_R, M_new_B, M_new_G;
 	Matrix M_gpu_new_R, M_gpu_new_B, M_gpu_new_G;
 
-	/*Begin: read in a jpg image*/
+	/*///////////////                           /////////////////////
+    /////////////////   READ IN JPEG  IMAGE  	/////////////////////
+    ////////////////                            ///////////////////// */
     int pixel_size;
     int pixel = 0;
     bundle  RGB_bundle;
@@ -55,7 +60,9 @@ int main(){
 	M_old_G.height = RGB_bundle.height;
 	/*End: read in a jpg image*/
     
-	// Filter Function
+	/*///////////////                           		/////////////////////
+    /////////////////   INITIALIZE FILTER FUNCTION  	/////////////////////
+    ////////////////                            		///////////////////// */
     int kernelsize = 20;
 	M_filter.width = kernelsize;
 	M_filter.height = kernelsize;
@@ -67,7 +74,9 @@ int main(){
     }
 	M_filter.elements = filter;
 	
-	// Filter Image CPU
+	/*///////////////                           /////////////////////
+    /////////////////   CPU FILTERING OF IMAGE  /////////////////////
+    ////////////////                            ///////////////////// */
 	new_R = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
     new_B = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
     new_G = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
@@ -89,7 +98,10 @@ int main(){
     M_gpu_new_R.height = RGB_bundle.height-kernelsize+1;
     M_gpu_new_B.height = RGB_bundle.height-kernelsize+1;
     M_gpu_new_G.height = RGB_bundle.height-kernelsize+1;
-
+	
+	// CPU filtering loop
+	struct timeval tvalBefore, tvalAfter;
+    gettimeofday (&tvalBefore, NULL);
 	for(int i=0;i<M_new_R.height;i++){
 		for(int j=0;j<M_new_R.width;j++){
 			new_R[i*M_new_R.width + j]=0;
@@ -109,12 +121,21 @@ int main(){
 			}
 		}   
 	}
-	
+	gettimeofday (&tvalAfter, NULL);
+    printf("CPU Time: %f",
+            (float)((tvalAfter.tv_usec - tvalBefore.tv_usec))
+          );
+
+	/*///////////////							/////////////////////
+	/////////////////	GPU FILTERING OF IMAGE  /////////////////////
+	////////////////							///////////////////// */
 	MatFilter(M_filter,M_old_R, M_gpu_new_R);
 	MatFilter(M_filter, M_old_G, M_gpu_new_G);
 	MatFilter(M_filter, M_old_B, M_gpu_new_B);
 	
-	// Put Matrices back in bundle
+	/*///////////////                           		/////////////////////
+    /////////////////   EXPORT FILTERED IMAGE TO JPEG  	/////////////////////
+    ////////////////                            		///////////////////// */
 	bundle n_RGB_bundle;
 	n_RGB_bundle.height = M_gpu_new_R.height;
 	n_RGB_bundle.width = M_gpu_new_R.width;
@@ -136,6 +157,9 @@ int main(){
     write_jpg("Sunflower_2.jpg", &n_RGB_bundle);
     /*END: save jpeg file*/
     
+	/*///////////////                           /////////////////////
+    /////////////////   	CLEAN UP		  	/////////////////////
+    ////////////////                            ///////////////////// */
 	free(RGB_bundle.image_data); 
 	free(n_RGB_bundle.image_data);
     free(old_R); free(old_G); free(old_B); 
