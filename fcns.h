@@ -7,7 +7,7 @@
 #include <curand_kernel.h>
 
 // Thread block size
-#define BLOCK_SIZE      16  // number of threads in a direction of the block
+#define BLOCK_SIZE      32  // number of threads in a direction of the block
 #define A_HEIGHT        2000 // number of columns. 512
 #define AB_SHARED_DIM   2000
 #define B_WIDTH         2000 // number of rows

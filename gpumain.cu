@@ -64,7 +64,7 @@ int main(){
 	/*///////////////                           		/////////////////////
     /////////////////   INITIALIZE FILTER FUNCTION  	/////////////////////
     ////////////////                            		///////////////////// */
-    int kernelsize = 40; // Filter height and width
+    int kernelsize = 20; // Filter height and width
 	
 	// Allocate memory for filter matrix
 	M_filter.width = kernelsize;
@@ -133,8 +133,9 @@ int main(){
 		}   
 	}
 	gettimeofday (&tvalAfter, NULL);	// for measuring cpu execution time
-    CPUtime = (tvalAfter.tv_sec - tvalBefore.tv_sec);
-	printf("CPU Time: %f s\n",CPUtime);
+	CPUtime = (tvalAfter.tv_sec - tvalBefore.tv_sec) * 1000.0;      // sec to ms
+    CPUtime += (tvalAfter.tv_usec - tvalBefore.tv_usec) / 1000.0;
+	printf("CPU Time: %f s\n",CPUtime/1000);
 
 	/*///////////////							/////////////////////
 	/////////////////	GPU FILTERING OF IMAGE  /////////////////////
