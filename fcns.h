@@ -7,7 +7,7 @@
 #include <curand_kernel.h>
 
 // Thread block size
-#define BLOCK_SIZE      16  // number of threads in a direction of the block
+#define BLOCK_SIZE      8  // number of threads in a direction of the block
 #define KERNELSIZE		10
 
 // Declaration fo Matrix Class

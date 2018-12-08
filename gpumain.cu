@@ -29,7 +29,7 @@ int main(){
     bundle  RGB_bundle;
 	
     // Read jpg to bundle
-    read_jpg("5000.jpg", &RGB_bundle);
+    read_jpg("7500.jpg", &RGB_bundle);
     pixel_size = RGB_bundle.num_channels;
 	
 	// Allocate memory to store RGB values
@@ -63,12 +63,6 @@ int main(){
 	/*///////////////                           		/////////////////////
     /////////////////   INITIALIZE FILTER FUNCTION  	/////////////////////
     ////////////////                            		///////////////////// */
-<<<<<<< HEAD
-    int kernelsize = 10; // Filter height and width
-=======
-    int KERNELSIZE = 10; // Filter height and width
->>>>>>> 76b95c4349d8e27dd11bdd15387c6ea392286f1c
-	
 	// Allocate memory for filter matrix
 	M_filter.width = KERNELSIZE;
 	M_filter.height = KERNELSIZE;
@@ -175,7 +169,7 @@ int main(){
     }
 	
 	// Write bundle to jpeg image
-    write_jpg("5000_2.jpg", &n_RGB_bundle);
+    write_jpg("7500_2.jpg", &n_RGB_bundle);
     
 	/*///////////////                           /////////////////////
     /////////////////   	CLEAN UP		  	/////////////////////
