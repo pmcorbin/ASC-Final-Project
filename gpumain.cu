@@ -18,7 +18,6 @@ int main(){
     /////////////////   INITIALIZE VARIABLES  	/////////////////////
     ////////////////                            ///////////////////// */
     double *filter, *old_R, *old_B, *old_G, *new_R, *new_B, *new_G;
-	double *gpu_new_R, *gpu_new_G, *gpu_new_B;
     Matrix M_filter, M_old_R, M_old_B, M_old_G, M_new_R, M_new_B, M_new_G;
 	Matrix M_gpu_new_R, M_gpu_new_B, M_gpu_new_G;
 
@@ -64,17 +63,21 @@ int main(){
 	/*///////////////                           		/////////////////////
     /////////////////   INITIALIZE FILTER FUNCTION  	/////////////////////
     ////////////////                            		///////////////////// */
+<<<<<<< HEAD
     int kernelsize = 10; // Filter height and width
+=======
+    int KERNELSIZE = 10; // Filter height and width
+>>>>>>> 76b95c4349d8e27dd11bdd15387c6ea392286f1c
 	
 	// Allocate memory for filter matrix
-	M_filter.width = kernelsize;
-	M_filter.height = kernelsize;
-	filter = (double*)malloc(kernelsize*kernelsize*sizeof(double));
+	M_filter.width = KERNELSIZE;
+	M_filter.height = KERNELSIZE;
+	filter = (double*)malloc(KERNELSIZE*KERNELSIZE*sizeof(double));
 	
 	// Populate filter matrix
 	for(int i=0;i<M_filter.height;i++){
         for(int j=0;j<M_filter.width;j++){
-            filter[i*kernelsize + j] = 1.0/(kernelsize*kernelsize);
+            filter[i*KERNELSIZE + j] = 1.0/(KERNELSIZE*KERNELSIZE);
 		}
     }
 	
@@ -86,29 +89,32 @@ int main(){
     ////////////////                            ///////////////////// */
 	
 	// Allocate memory for filtered RGB matrices
-	new_R = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
-    new_B = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
-    new_G = (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
-	M_new_R.width = RGB_bundle.width-kernelsize+1;
-    M_new_B.width = RGB_bundle.width-kernelsize+1;
-    M_new_G.width = RGB_bundle.width-kernelsize+1;
-    M_new_R.height = RGB_bundle.height-kernelsize+1;
-    M_new_B.height = RGB_bundle.height-kernelsize+1;
-    M_new_G.height = RGB_bundle.height-kernelsize+1;
+	new_R = (double*)malloc((RGB_bundle.width-KERNELSIZE+1)
+			*(RGB_bundle.height-KERNELSIZE+1)*sizeof(double));
+	new_G = (double*)malloc((RGB_bundle.width-KERNELSIZE+1)
+            *(RGB_bundle.height-KERNELSIZE+1)*sizeof(double));
+	new_B = (double*)malloc((RGB_bundle.width-KERNELSIZE+1)
+            *(RGB_bundle.height-KERNELSIZE+1)*sizeof(double));
+	M_new_R.width = RGB_bundle.width-KERNELSIZE+1;
+    M_new_B.width = RGB_bundle.width-KERNELSIZE+1;
+    M_new_G.width = RGB_bundle.width-KERNELSIZE+1;
+    M_new_R.height = RGB_bundle.height-KERNELSIZE+1;
+    M_new_B.height = RGB_bundle.height-KERNELSIZE+1;
+    M_new_G.height = RGB_bundle.height-KERNELSIZE+1;
 	M_gpu_new_R.elements 
-	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
+	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-KERNELSIZE+1);
     M_gpu_new_B.elements 
-	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
+	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-KERNELSIZE+1);
     M_gpu_new_G.elements 
-	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-kernelsize+1);
-    M_gpu_new_R.width = RGB_bundle.width-kernelsize+1;
-    M_gpu_new_B.width = RGB_bundle.width-kernelsize+1;
-    M_gpu_new_G.width = RGB_bundle.width-kernelsize+1;
-    M_gpu_new_R.height = RGB_bundle.height-kernelsize+1;
-    M_gpu_new_B.height = RGB_bundle.height-kernelsize+1;
-    M_gpu_new_G.height = RGB_bundle.height-kernelsize+1;
+	= (double*)malloc(RGB_bundle.width*RGB_bundle.height*sizeof(double)-KERNELSIZE+1);
+    M_gpu_new_R.width = RGB_bundle.width-KERNELSIZE+1;
+    M_gpu_new_B.width = RGB_bundle.width-KERNELSIZE+1;
+    M_gpu_new_G.width = RGB_bundle.width-KERNELSIZE+1;
+    M_gpu_new_R.height = RGB_bundle.height-KERNELSIZE+1;
+    M_gpu_new_B.height = RGB_bundle.height-KERNELSIZE+1;
+    M_gpu_new_G.height = RGB_bundle.height-KERNELSIZE+1;
 	
-	// CPU filtering loop
+	// CPU filtering loop 
 	printf("Start\n");
 	struct timeval tvalBefore, tvalAfter;	// for measuring cpu execution time
     gettimeofday (&tvalBefore, NULL);
@@ -136,7 +142,7 @@ int main(){
 	CPUtime = (tvalAfter.tv_sec - tvalBefore.tv_sec) * 1000.0;      // sec to ms
     CPUtime += (tvalAfter.tv_usec - tvalBefore.tv_usec) / 1000.0;
 	printf("CPU Time: %f s\n",CPUtime/1000);
-
+	
 	/*///////////////							/////////////////////
 	/////////////////	GPU FILTERING OF IMAGE  /////////////////////
 	////////////////							///////////////////// */
